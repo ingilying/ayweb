@@ -5,10 +5,12 @@ cmake_minimum_required(VERSION 3.15)
 #
 
 project(
-  "Project"
+  Ayweb
   VERSION 0.1.0
   LANGUAGES CXX
 )
+
+set(CMAKE_CXX_STANDARD 20)
 
 #
 # Set project options
@@ -87,7 +89,7 @@ elseif(${PROJECT_NAME}_BUILD_HEADERS_ONLY)
 
   if(${PROJECT_NAME}_VERBOSE_OUTPUT)
     verbose_message("Found the following headers:")
-    foreach(header IN LIST headers)
+        foreach(header IN LISTS headers)
       verbose_message("* ${header}")
     endforeach()
   endif()
@@ -134,12 +136,12 @@ message(STATUS "Added all header and implementation files.\n")
 #
 
 if(${PROJECT_NAME}_BUILD_HEADERS_ONLY)
-  target_compile_features(${PROJECT_NAME} INTERFACE cxx_std_17)
+  target_compile_features(${PROJECT_NAME} INTERFACE cxx_std_20)
 else()
-  target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_17)
+  target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_20)
 
   if(${PROJECT_NAME}_BUILD_EXECUTABLE AND ${PROJECT_NAME}_ENABLE_UNIT_TESTING)
-    target_compile_features(${PROJECT_NAME}_LIB PUBLIC cxx_std_17)
+    target_compile_features(${PROJECT_NAME}_LIB PUBLIC cxx_std_20)
   endif()
 endif()
 include(cmake/CompilerWarnings.cmake)
@@ -193,12 +195,20 @@ verbose_message("Successfully added all dependencies and linked against them.")
 #
 # Set the build/user include directories
 #
-
+set(THIRD_PARTY_HEADERS 
+third_party/asio/include
+third_party/asio/include
+third_party/TooManyCooks/include
+third_party/tmc-asio/include)
+target_compile_definitions(${PROJECT_NAME} INTERFACE 
+    ASIO_STANDALONE
+)
 # Allow usage of header files in the `src` directory, but only for utilities
 if(${PROJECT_NAME}_BUILD_HEADERS_ONLY)
   target_include_directories(
     ${PROJECT_NAME}
     INTERFACE
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/${THIRD_PARTY_HEADERS}>
     $<INSTALL_INTERFACE:include>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   )
@@ -208,6 +218,7 @@ else()
     PUBLIC
     $<INSTALL_INTERFACE:include>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    ${THIRD_PARTY_HEADERS}
     PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src
   )
@@ -217,6 +228,7 @@ else()
       PUBLIC
       $<INSTALL_INTERFACE:include>
       $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+      ${THIRD_PARTY_HEADERS}
       PRIVATE
       ${CMAKE_CURRENT_SOURCE_DIR}/src
     )

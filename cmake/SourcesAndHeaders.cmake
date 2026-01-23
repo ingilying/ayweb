@@ -1,5 +1,4 @@
 set(sources
-    src/tmp.cpp
 )
 
 set(exe_sources
@@ -8,7 +7,8 @@ set(exe_sources
 )
 
 set(headers
-    include/project/tmp.hpp
+    include/Ayweb/ayweb.hpp
+    include/Ayweb/http_server.hpp
 )
 
 set(test_sources
