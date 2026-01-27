@@ -18,7 +18,14 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-      
+      with:
+        submodules: recursive
+
+    - name: Setup vcpkg
+      uses: lukka/run-vcpkg@v11
+      with:
+        vcpkgGitCommitId: 'c8696863d371ab7f46e213d8f5ca923c4ff5e63e'
+
     - name: cache dependencies
       uses: actions/cache@v4
       id: cache
@@ -38,7 +45,7 @@ jobs:
         cd ../modern-cpp-template
 
     - name: configure
-      run: cmake -Bbuild -DCMAKE_INSTALL_PREFIX=$GITHUB_WORKSPACE/$INSTALL_LOCATION
+      run: cmake -Bbuild -DCMAKE_INSTALL_PREFIX=$GITHUB_WORKSPACE/$INSTALL_LOCATION -DCMAKE_TOOLCHAIN_FILE=$VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake
       
     - name: build
       run: cmake --build build --config $BUILD_TYPE -j4
