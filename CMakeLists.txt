@@ -178,6 +178,13 @@ include(cmake/Doxygen.cmake)
 #  )
 #endif()
 
+find_package(magic_enum CONFIG REQUIRED)
+target_link_libraries(
+    ${PROJECT_NAME}
+    INTERFACE
+    magic_enum::magic_enum
+)
+
 # For Windows, it is necessary to link with the MultiThreaded library.
 # Depending on how the rest of the project's dependencies are linked, it might be necessary
 # to change the line to statically link with the library.

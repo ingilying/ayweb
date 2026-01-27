@@ -57,17 +57,16 @@ namespace ayweb
 
     static tmc::task<void> socket_handler(asio::ip::tcp::socket socket)
     {
-      char data[BUFFER_SIZE]; // NOLINT
+      char* data = new char[BUFFER_SIZE];  // NOLINT
       while (socket.is_open())
       {
-        auto data_buf = asio::buffer(data);
+        auto data_buf = asio::buffer(data, BUFFER_SIZE);
         auto [error, num] = co_await socket.async_read_some(data_buf, tmc::aw_asio);
-        if (error) {
-            socket.close();
-            co_return;
+        if (error)
+        {
+          socket.close();
+          co_return;
         }
-
-
       }
     }
 
@@ -75,4 +74,4 @@ namespace ayweb
     asio::ip::tcp::acceptor m_acceptor;
     unsigned short m_port;
   };
-}  // namespace Ayweb
+}  // namespace ayweb
