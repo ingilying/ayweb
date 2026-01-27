@@ -82,7 +82,7 @@ jobs:
         cmake -Bbuild -DCMAKE_INSTALL_PREFIX="$HOME/.local" -Dgtest_force_shared_crt=1
         cmake --build build --config Release
         cmake --build build --target install --config Release
-        cd ../modern-cpp-template
+        cd ../ayweb
 
     - name: configure (Windows)
       if: ${{ runner.os == 'Windows' }}
