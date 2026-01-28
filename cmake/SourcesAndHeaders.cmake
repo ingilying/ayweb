@@ -7,8 +7,8 @@ set(exe_sources
 )
 
 set(headers
-    include/Ayweb/ayweb.hpp
-    include/Ayweb/http_server.hpp
+    include/ayweb/ayweb.hpp
+    include/ayweb/http_server.hpp
 )
 
 set(test_sources
