@@ -1,22 +1,32 @@
 #pragma once
 #include <asio.hpp>
+#include <cstring>
 #include <tmc/all_headers.hpp>
 #include <tmc/asio/aw_asio.hpp>
 #include <tmc/asio/ex_asio.hpp>
 #include <utility>
 
+#include "ayweb/protocol.hpp"
+#include "ayweb/router.hpp"
+
 namespace ayweb
 {
-  class http_server
+  class HttpServer
   {
    public:
     constexpr static unsigned int BUFFER_SIZE = 1024 * 2;
 
-    http_server(asio::ip::address addr, unsigned short port)
+    HttpServer() = delete;
+    HttpServer(asio::ip::address addr, unsigned short port)
         : m_address(std::move(addr)),
           m_acceptor(tmc::asio_executor(), { m_address, port }),
           m_port(port)
     {
+    }
+
+    void set_router(Router router)
+    {
+      this->m_router = std::move(router);
     }
 
     int run()
@@ -67,11 +77,16 @@ namespace ayweb
           socket.close();
           co_return;
         }
+        auto req = read_message(static_cast<const char*>(data_buf.data()), data_buf.size());
+
+        // reset the buffer
+        std::memset(data_buf.data(), 0, data_buf.size());
       }
     }
 
     asio::ip::address m_address;
     asio::ip::tcp::acceptor m_acceptor;
     unsigned short m_port;
+    Router m_router;
   };
 }  // namespace ayweb
