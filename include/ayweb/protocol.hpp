@@ -1,27 +1,32 @@
 #pragma once
-#include <cctype>
-#include <cstddef>
-#include <exception>
+#include <cstdint>
+#include <functional>
 #include <optional>
-#include <ranges>
-#include <span>
-#include <sstream>
 #include <string>
 #include <string_view>
 #include <unordered_map>
 #include <utility>
+#include "tmc/task.hpp"
 
 namespace ayweb
 {
+  const static unsigned int STATUS_CODE_OK = 200;
+  const static unsigned int STATUS_CODE_NOTFOUND = 404;
 
   struct Request
   {
-    std::string method;
-    std::string path;
-    std::unordered_map<std::string, std::string> params;
-    std::string version;
-    std::unordered_map<std::string, std::string> headers;
+    std::string_view method;
+    std::string_view path;
+    std::unordered_map<std::string_view, std::string_view> params;
+    std::string_view version;
+    std::unordered_map<std::string_view, std::string_view> headers;
     std::string content;
+    std::function<tmc::task<void>()> chunk_progress;
+  };
+
+  enum class RespOutputOption : std::uint8_t {
+    Normal,
+    Chunked
   };
 
   struct Response
@@ -31,133 +36,20 @@ namespace ayweb
     std::string status;
     std::unordered_map<std::string, std::string> headers;
     std::string content;
+    RespOutputOption option;
+
   };
 
-  inline std::optional<std::string> read_line(std::span<const char>& data, std::span<const char>::iterator& itr)
-  {
-    auto begin = itr;
-    while (itr != data.end())
-    {
-      if (*itr == '\r')
-      {
-        itr++;
-        if (itr != data.end())
-        {
-          if (*itr == '\n')
-          {
-            auto end = itr - 1;
-            itr++;
-            return std::string(begin, end);
-          }
-        }
-      }
-      else
-      {
-        itr++;
-      }
-    }
-    return std::nullopt;
-  }
+  std::string output_response(Response& resp);
+  Response response_ok(Request& req);
+  Response response_notfound(Request& req);
+  Response build_response(Request& req);
 
-  inline auto trim(auto&& range)
-  {
-    auto isspace = [](unsigned char ccc) { return std::isspace(ccc); };
-    return range | std::views::drop_while(isspace) | std::views::reverse | std::views::drop_while(isspace) |
-           std::views::reverse;
-  }
+  std::optional<std::string_view> read_line(std::string_view& data);
 
-  inline std::pair<std::string, std::unordered_map<std::string, std::string>> parse_params(std::string& url)
-  {
-    std::unordered_map<std::string, std::string> params;
+  std::string_view trim(std::string_view str);
 
-    std::string_view view(url);
-    auto parts = view | std::views::split('?');
-    auto itr = parts.begin();
-    std::string path((*itr).begin(), (*itr).end());
-    std::string_view params_view = (++itr != parts.end()) ? std::string_view((*itr).begin(), (*itr).end()) : "";
-    if (!params_view.empty())
-    {
-      auto pairs = params_view | std::views::split('&');
-
-      for (auto kvs : pairs)
-      {
-        auto pair = kvs | std::views::split('=');
-        auto p_it = pair.begin();
-        if (p_it != pair.end())
-        {
-          std::string key{ (*p_it).begin(), (*p_it).end() };
-          std::string value = (++p_it != pair.end()) ? std::string((*p_it).begin(), (*p_it).end()) : "";
-          params.insert({ key, value });
-        }
-      }
-    }
-
-    return { std::move(path), std::move(params) };
-  }
-  inline std::optional<Request> read_message(const char* data, std::size_t n)
-  {
-    std::span<const char> data_view{ data, n };
-    auto itr = data_view.begin();
-    // Request Line
-    auto request_line = read_line(data_view, itr);
-    if (request_line != std::nullopt)
-    {
-      std::stringstream head_stream(*request_line);
-      std::string method;
-      std::string url;
-      std::string path;
-      std::unordered_map<std::string, std::string> params;
-      std::string version;
-      try
-      {
-        head_stream >> method >> url >> version;
-        // parase params
-        auto [r_path, r_params] = parse_params(url);
-        path = std::move(r_path);
-        params = std::move(r_params);
-        // Header Line
-        std::unordered_map<std::string, std::string> header;
-        while (true)
-        {
-          auto line = read_line(data_view, itr);
-          if (line == std::nullopt || line->empty())
-          {
-            break;
-          }
-          auto kvs = (*line) | std::views::split(':');
-          auto itc = kvs.begin();
-          if (itc != kvs.end())
-          {
-            auto key_view = trim(*itc);
-            std::string key{ key_view.begin(), key_view.end() };
-            ++itc;
-            if (itc != kvs.end())
-            {
-              auto value_view = trim(*itc);
-              std::string value{ value_view.begin(), value_view.end() };
-              header.insert({ key, value });
-            }
-          }
-        }
-        // Content
-        ++itr;
-        std::string content;
-        if (itr != data_view.end())
-        {
-          content = std::string(itr, data_view.end());
-        }
-        return Request{ .method = std::move(method),
-                        .path = std::move(path),
-                        .params = std::move(params),
-                        .version = std::move(version),
-                        .headers = std::move(header),
-                        .content = std::move(content) };
-      }
-      catch (std::exception& ep)
-      {
-        return std::nullopt;
-      }
-    }
-    return std::nullopt;
-  }
+  std::pair<std::string_view, std::unordered_map<std::string_view, std::string_view>> parse_params(std::string_view url);
+  std::optional<Request> read_request(std::string_view data);
+  std::optional<std::string> read_chunks(std::string_view chunks_str);
 }  // namespace ayweb

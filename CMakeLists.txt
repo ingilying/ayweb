@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.21..4.2.3)
 
 project(ayweb VERSION 1.0 LANGUAGES CXX)
 
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 set(CMAKE_EXPORT_COMPILE_COMMANDS True)
 
@@ -31,13 +31,16 @@ FetchContent_MakeAvailable(googletest)
 set(PSOURCES 
     src/http_server.cpp
     src/protocol.cpp
-    src/router.cpp)
+    src/router.cpp
+    src/connection.cpp)
 
 set(PHEADERS 
     include/ayweb/ayweb.hpp
     include/ayweb/http_server.hpp
     include/ayweb/protocol.hpp
-    include/ayweb/router.hpp)
+    include/ayweb/router.hpp
+    include/ayweb/util/func.hpp
+    include/ayweb/connection.hpp)
 
 include_directories(ayweb 
 ${toomanycooks_SOURCE_DIR}/include)

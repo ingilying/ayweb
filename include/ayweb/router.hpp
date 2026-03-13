@@ -2,12 +2,10 @@
 #include <functional>
 #include <memory>
 #include <optional>
-#include <ranges>
 #include <string>
 #include <tmc/all_headers.hpp>
 #include <unordered_map>
 #include <utility>
-
 #include "ayweb/protocol.hpp"
 #include "tmc/task.hpp"
 
@@ -42,50 +40,10 @@ namespace ayweb
     PathTree& operator=(PathTree&&) = default;
     ~PathTree() = default;
 
-    void insert(const std::string& path, const std::pair<std::string, RouterFun>& handle)
-    {
-      auto* current = root.get();
+    void insert(const std::string& path, const std::pair<std::string, RouterFun>& handle);
 
-      auto parts = path | std::views::split('/') | std::views::filter([](auto&& ele) { return !ele.empty(); });
-
-      for (const auto& part : parts)
-      {
-        std::string key{ part.begin(), part.end() };
-        if (!current->children.contains(key))
-        {
-          current->children.insert({ key, std::make_unique<PathNode>(key) });
-        }
-        current = current->children[key].get();
-      }
-      current->set(handle.first, handle.second);
-    }
-    
     // the first is path, the second is method
-    std::optional<const RouterFun> search(std::pair<std::string, std::string> pathk)
-    {
-      auto* current = root.get();
-
-      auto parts = pathk.first | std::views::split('/') | std::views::filter([](auto&& ele) { return !ele.empty(); });
-
-      for (const auto& part : parts)
-      {
-        std::string key{ part.begin(), part.end() };
-        if (current->children.contains(key))
-        {
-          current = current->children[key].get();
-        }
-        else
-        {
-          return {};
-        }
-      }
-      auto res = current->handlers.find(pathk.second);
-      if (res != current->handlers.end())
-      {
-        return { res->second };
-      }
-      return {};
-    }
+    std::optional<const RouterFun> search(std::pair<std::string, std::string> pathk);
 
    private:
     PathNodePtr root;
@@ -98,32 +56,14 @@ namespace ayweb
     Router(const Router& other) = default;
     Router& operator=(const Router&) = default;
 
-    Router(Router&& other) noexcept : reg_map(std::move(other.reg_map))
-    {
-    }
-    Router& operator=(Router&& other) noexcept
-    {
-      this->reg_map = std::move(other.reg_map);
-      return *this;
-    }
+    Router(Router&& other) noexcept;
+    Router& operator=(Router&& other) noexcept;
 
     ~Router() = default;
 
-    void route(std::string url, RouterFun&& fun)
-    {
-      reg_map.insert({ std::move(url), std::move(fun) });
-    }
+    void route(std::string url, RouterFun&& fun);
 
-    tmc::task<std::optional<Response>> handle(Request req)
-    {
-      auto fun = reg_map.find(req.path);
-      if (fun != reg_map.end())
-      {
-        auto resp = co_await fun->second(std::move(req));
-        co_return resp;
-      }
-      co_return std::nullopt;
-    }
+    tmc::task<std::optional<Response>> handle(Request req);
 
    private:
     std::unordered_map<std::string, RouterFun> reg_map;
