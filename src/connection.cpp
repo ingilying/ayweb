@@ -4,28 +4,36 @@
 #include <asio/read_until.hpp>
 #include <asio/streambuf.hpp>
 #include <iostream>
+#include <memory>
 #include <string>
 #include <tmc/asio/aw_asio.hpp>
 #include <tmc/task.hpp>
 #include <utility>
 
+#include "ayweb/context.hpp"
 #include "ayweb/protocol.hpp"
 #include "ayweb/router.hpp"
 
 namespace ayweb
 {
-  Connection::Connection(AsioSocket&& sock, Router route) : router(std::move(route))
+  Connection::Connection(AsioSocket&& sock)
   {
     socket = std::make_unique<AsioSocket>(std::move(sock));
   }
 
   tmc::task<void> Connection::send(std::string data)
   {
-    auto [ecode, size] = co_await socket->async_send(data, tmc::aw_asio);
+    auto [ecode, size] = co_await socket->async_send(asio::buffer(data), tmc::aw_asio);
     if (ecode || size != data.size())
     {
       std::cout << "Error when sending data: " << ecode.message() << '\n';
     }
+  }
+
+  tmc::task<void> Connection::send_head(Response resp)
+  {
+    auto data = output_response(resp);
+    co_await this->send(std::move(data));
   }
 
   tmc::task<void> Connection::send_chunk(std::string data)
@@ -93,7 +101,8 @@ namespace ayweb
       }
     }
   }
-  tmc::task<void> Connection::handle()
+
+  tmc::task<void> Connection::handle(std::shared_ptr<GlobalContext> ctx)
   {
     asio::streambuf streambuf;
     while (socket->is_open())
@@ -114,13 +123,18 @@ namespace ayweb
         // read content
         co_await handle_content_length(*socket, streambuf, *req);
         co_await handle_chunked(*socket, streambuf, *req);
-      }
-      // handle request
-      auto response = co_await router.handle(std::move(*req));
-      if (response)
-      {
-        auto response_data = output_response(*response);
-        co_await socket->async_send(response_data, tmc::aw_asio);
+        req->conn = this;
+        // handle request
+        auto response = co_await ctx->router.handle(std::move(*req));
+        if (response)
+        {
+          if (response->option == RespOutputOption::Chunked)
+          {
+            continue;
+          }
+          auto response_data = output_response(*response);
+          co_await socket->async_send(asio::buffer(response_data), tmc::aw_asio);
+        }
       }
     }
     co_return;

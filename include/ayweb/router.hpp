@@ -6,13 +6,15 @@
 #include <tmc/all_headers.hpp>
 #include <unordered_map>
 #include <utility>
+
+#include "ayweb/export.hpp"
 #include "ayweb/protocol.hpp"
 #include "tmc/task.hpp"
 
 namespace ayweb
 {
   using RouterFun = std::function<tmc::task<Response>(Request)>;
-  class PathTree
+  AYWEB_EXPORT class PathTree
   {
    private:
     struct PathNode
@@ -40,6 +42,7 @@ namespace ayweb
     PathTree& operator=(PathTree&&) = default;
     ~PathTree() = default;
 
+    // path: the request path , handle: < Method, Handler>
     void insert(const std::string& path, const std::pair<std::string, RouterFun>& handle);
 
     // the first is path, the second is method
@@ -48,24 +51,25 @@ namespace ayweb
    private:
     PathNodePtr root;
   };
-  class Router
+
+  AYWEB_EXPORT class Router
   {
    public:
-    explicit Router() = default;
+    Router() = default;
 
-    Router(const Router& other) = default;
-    Router& operator=(const Router&) = default;
+    Router(const Router& other) = delete;
+    Router& operator=(const Router&) = delete;
 
     Router(Router&& other) noexcept;
     Router& operator=(Router&& other) noexcept;
 
     ~Router() = default;
 
-    void route(std::string url, RouterFun&& fun);
+    void route(const std::string& url, const std::string& method, RouterFun&& fun);
 
     tmc::task<std::optional<Response>> handle(Request req);
 
    private:
-    std::unordered_map<std::string, RouterFun> reg_map;
+    PathTree tree;
   };
 }  // namespace ayweb

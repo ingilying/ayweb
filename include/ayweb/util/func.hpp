@@ -3,11 +3,13 @@
 #include <string_view>
 #include <vector>
 
+#include "../export.hpp"
+
 namespace ayweb::utils
 {
   using VECSVITR = std::vector<std::string_view>::iterator;
 
-  inline auto accumulate_sv(VECSVITR first, VECSVITR last, int total_size) -> std::string
+  AYWEB_EXPORT inline auto accumulate_sv(VECSVITR first, VECSVITR last, int total_size) -> std::string
   {
     std::string res{};
     res.reserve(total_size);

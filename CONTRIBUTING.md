@@ -1,19 +1,19 @@
-# Contributing to [INSERT PROJECT NAME]
+# Contributing to Ayweb
 
-The [INSERT PROJECT NAME] team encourages community feedback and contributions.
+The Ayweb team encourages community feedback and contributions.
 Thank you for your interest in making [INSERT PROJECT NAME] better! There are several
 ways you can get involved.
 
 If you are looking for a good way to contribute to the project, please:
 
-* have a look at the [available issue templates](https://github.com/filipdutescu/modern-cpp-template/issues/new/choose)
-and checkout the [examples of good first issues](https://github.com/filipdutescu/modern-cpp-template/contribute)
-(or [click here](https://github.com/filipdutescu/modern-cpp-template/labels/good%20first%20issue)).
+- have a look at the [available issue templates](https://github.com/filipdutescu/modern-cpp-template/issues/new/choose)
+  and checkout the [examples of good first issues](https://github.com/filipdutescu/modern-cpp-template/contribute)
+  (or [click here](https://github.com/filipdutescu/modern-cpp-template/labels/good%20first%20issue)).
 
-* look through the [issues that need help](https://github.com/filipdutescu/modern-cpp-template/labels/help%20wanted).
+- look through the [issues that need help](https://github.com/filipdutescu/modern-cpp-template/labels/help%20wanted).
 
-* take a look at a [Pull Request template](PULL_REQUEST_TEMPLATE.md) to get yourself
-started.
+- take a look at a [Pull Request template](PULL_REQUEST_TEMPLATE.md) to get yourself
+  started.
 
 ## Reporting issues and suggesting new features
 
@@ -51,28 +51,28 @@ guidelines:
 
 ### DOs
 
-* **DO** create one pull request per Issue, and ensure that the Issue is linked
-in the pull request. You can follow the [Pull Request Template](PULL_REQUEST_TEMPLATE.md)
-for this.
+- **DO** create one pull request per Issue, and ensure that the Issue is linked
+  in the pull request. You can follow the [Pull Request Template](PULL_REQUEST_TEMPLATE.md)
+  for this.
 
-* **DO** follow our [Coding and Style](#style-guidelines) guidelines, and keep code
-changes as small as possible.
+- **DO** follow our [Coding and Style](#style-guidelines) guidelines, and keep code
+  changes as small as possible.
 
-* **DO** include corresponding tests whenever possible.
+- **DO** include corresponding tests whenever possible.
 
-* **DO** check for additional occurrences of the same problem in other parts of the
-codebase before submitting your PR.
+- **DO** check for additional occurrences of the same problem in other parts of the
+  codebase before submitting your PR.
 
-* **DO** link the issue you are addressing in the pull request.
+- **DO** link the issue you are addressing in the pull request.
 
-* **DO** write a good description for your pull request. More detail is better.
-Describe *why* the change is being made and *why* you have chosen a particular solution.
-Describe any manual testing you performed to validate your change.
+- **DO** write a good description for your pull request. More detail is better.
+  Describe _why_ the change is being made and _why_ you have chosen a particular solution.
+  Describe any manual testing you performed to validate your change.
 
 ### DO NOTs
 
-* **DO NOT** merge multiple changes into one PR unless they have the same root cause.
-* **DO NOT** merge directly into the master branch.
+- **DO NOT** merge multiple changes into one PR unless they have the same root cause.
+- **DO NOT** merge directly into the master branch.
 
 > Submitting a pull request for an approved Issue is not a guarantee it will be approved.
 > The change must meet our high bar for code quality, architecture and performance.
@@ -92,7 +92,7 @@ code as much as possible. In new components, prefer the patterns described in th
 
 ### Code formatting
 
-***Run clang-format***
+**_Run clang-format_**
 
 Use the following commands from the project's root directory to run clang-format
 (must be installed on the host system).
@@ -152,7 +152,7 @@ to group your changes into a small number of commits which we can review one at 
 time.
 
 When completing a pull request, we will generally squash your changes into a single
-commit. After confirming that the change works as intended, the branch *might* be
+commit. After confirming that the change works as intended, the branch _might_ be
 deleted, in order to prevent branch polluting. Please let us know if your pull request
 needs to be merged as separate commits.
 
@@ -194,8 +194,8 @@ do it for each pull request made. This is done by checking the boxes in the
 
 ### IMPORTANT
 
-***Checking the aforementioned boxes means that you agree to provide your change
-and/or code FREE TO USE and SUBJECT TO CHANGES for the entire community!***
+**_Checking the aforementioned boxes means that you agree to provide your change
+and/or code FREE TO USE and SUBJECT TO CHANGES for the entire community!_**
 
 You don't need to sign a CLA until you're ready to create a pull request. When your
 pull request is created, it is reviewed by a team member which, if the change is

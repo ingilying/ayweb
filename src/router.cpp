@@ -1,5 +1,8 @@
 #include "ayweb/router.hpp"
+
 #include <ranges>
+
+#include "ayweb/protocol.hpp"
 
 namespace ayweb
 {
@@ -49,29 +52,32 @@ namespace ayweb
   }
 
   // Router implementations
-  Router::Router(Router&& other) noexcept : reg_map(std::move(other.reg_map))
+  Router::Router(Router&& other) noexcept : tree(std::move(other.tree))
   {
   }
 
   Router& Router::operator=(Router&& other) noexcept
   {
-    this->reg_map = std::move(other.reg_map);
+    this->tree = std::move(other.tree);
     return *this;
   }
 
-  void Router::route(std::string url, RouterFun&& fun)
+  void Router::route(const std::string& url, const std::string& method, RouterFun&& fun)
   {
-    reg_map.insert({ std::move(url), std::move(fun) });
+    tree.insert(url, { method, std::move(fun) });
   }
 
   tmc::task<std::optional<Response>> Router::handle(Request req)
   {
-    auto fun = reg_map.find(std::string{req.path});
-    if (fun != reg_map.end())
+    auto fun = tree.search({ std::string{ req.path }, std::string{ req.method } });
+    if (fun.has_value())
     {
-      auto resp = co_await fun->second(std::move(req));
+      auto resp = co_await (*fun)(std::move(req));
       co_return resp;
     }
-    co_return std::nullopt;
+    else
+    {
+      co_return response_notfound(req);
+    }
   }
 }  // namespace ayweb

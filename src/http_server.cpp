@@ -4,9 +4,11 @@
 #include <asio/completion_condition.hpp>
 #include <asio/read_until.hpp>
 #include <asio/streambuf.hpp>
+#include <memory>
 #include <utility>
 
 #include "ayweb/connection.hpp"
+#include "ayweb/context.hpp"
 
 namespace ayweb
 {
@@ -15,11 +17,12 @@ namespace ayweb
         m_acceptor(tmc::asio_executor(), { m_address, port }),
         m_port(port)
   {
+    this->gctx = std::make_shared<GlobalContext>();
   }
 
   void HttpServer::set_router(Router&& router)
   {
-    this->m_router = std::move(router);
+    this->gctx->router = std::move(router);
   }
 
   int HttpServer::run()
@@ -59,7 +62,7 @@ namespace ayweb
 
   tmc::task<void> HttpServer::socket_handler(asio::ip::tcp::socket socket)
   {
-    auto connection = std::make_unique<Connection>(std::move(socket), m_router);
-    co_await connection->handle();
+    auto connection = Connection(std::move(socket));
+    co_await connection.handle(gctx);
   }
 }  // namespace ayweb

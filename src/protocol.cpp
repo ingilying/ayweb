@@ -14,11 +14,11 @@
 
 namespace ayweb
 {
-  std::string output_response(Response& resp)
+  std::string output_response(const Response& resp)
   {
     std::stringstream sstream;
     sstream << resp.version << " " << resp.code << " " << resp.status << "\r\n";
-    for (auto& itr : resp.headers)
+    for (const auto& itr : resp.headers)
     {
       sstream << itr.first << ": " << itr.second << "\r\n";
     }
@@ -28,13 +28,18 @@ namespace ayweb
   }
   Response response_ok(Request& req)
   {
-    Response resp{ .version = std::string{ req.version }, .code = STATUS_CODE_OK, .status = "OK" };
+    Response resp{
+      .version = std::string{ req.version }, .code = STATUS_CODE_OK, .status = "OK", .option = RespOutputOption::Normal
+    };
     return resp;
   }
 
   Response response_notfound(Request& req)
   {
-    Response resp{ .version = std::string{ req.version }, .code = STATUS_CODE_NOTFOUND, .status = "NotFound" };
+    Response resp{ .version = std::string{ req.version },
+                   .code = STATUS_CODE_NOTFOUND,
+                   .status = "NotFound",
+                   .option = RespOutputOption::Normal };
     return resp;
   }
 

@@ -1,7 +1,6 @@
 #include <asio/ip/address.hpp>
 #include <utility>
 
-#include "ayweb/http_server.hpp"
 #include "tmc/ex_cpu.hpp"
 #include "tmc/task.hpp"
 #define TMC_IMPL
@@ -17,7 +16,7 @@
 TEST(PROTOCOL_TEST, READ)
 {
   char msg[] = "GET /main.html?a=b&c=d&e=f HTTP/1.1\r\nHost: www.test.com\r\nUser-Agent: test te1a\r\n\r\n";  // NOLINT
-  auto req = ayweb::read_request(msg, sizeof(msg));                                                           // NOLINT
+  auto req = ayweb::read_request(std::string_view{ msg });                                                    // NOLINT
   ASSERT_TRUE(req.has_value());
   // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
   const auto& request = *req;
@@ -59,6 +58,7 @@ TEST(MAIN_TEST, MAIN)
         ayweb::Router router;
         router.route(
             "/",
+            "GET",
             [](ayweb::Request req) -> tmc::task<ayweb::Response>
             {
               std::printf("handle /\n");  // NOLINT
@@ -68,7 +68,7 @@ TEST(MAIN_TEST, MAIN)
         const ayweb::Request req{
           .method = "GET", .path = "/", .params = {}, .version = "HTTP/1.1", .headers = {}, .content = ""
         };
-        co_await router.handle(req);
+        auto resp = co_await router.handle(req);
         co_return 0;
       }());
 }
@@ -76,22 +76,5 @@ TEST(MAIN_TEST, MAIN)
 int main(int argc, char** argv)
 {
   ::testing::InitGoogleTest(&argc, argv);
-  auto ret = RUN_ALL_TESTS();
-
-  ayweb::HttpServer server{ asio::ip::address_v4::any(), 7777 };  // NOHINT
-  ayweb::Router router;
-  router.route(
-      "/test/hello",
-      [](ayweb::Request req) -> tmc::task<ayweb::Response>
-      {
-        ayweb::Response resp;
-        resp.code = 200;
-        resp.version = req.version;
-        resp.headers = req.headers;
-        resp.content = "hello";
-        co_return resp;
-      });
-  server.set_router(std::move(router));
-  //server.run();
-  return ret;
+  return RUN_ALL_TESTS();
 }
